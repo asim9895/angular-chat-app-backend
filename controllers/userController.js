@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res) => {
-	const { username, email, password, confirmPassword } = req.body;
+	const { username, email, password } = req.body;
 
 	try {
 		const errors = validationResult(req);
@@ -21,12 +21,6 @@ exports.register = async (req, res) => {
 
 		if (emailExists) {
 			return res.status(401).send({ error: [{ msg: 'Email Exists' }] });
-		}
-
-		if (password !== confirmPassword) {
-			return res
-				.status(401)
-				.send({ error: [{ msg: "Password Doesn't Match" }] });
 		}
 
 		let user = new User({
@@ -77,7 +71,7 @@ exports.login = async (req, res) => {
 		jwt.sign(payload, process.env.JWT_SECRET, async (err, token) => {
 			if (err) throw Error(err);
 			res.cookie('auth', token);
-			res.status(200).json({ token });
+			res.status(200).json({ message: 'success', token });
 		});
 	} catch (error) {
 		console.log(error);

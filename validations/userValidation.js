@@ -28,10 +28,5 @@ exports.registerValidation = [
 
 exports.loginvalidations = [
 	check('username').not().isEmpty().withMessage('Username is required'),
-	check('email')
-		.not()
-		.isEmpty()
-		.withMessage('Email is required')
-		.isEmail()
-		.withMessage('Email is not valid'),
+	check('password').not().isEmpty().withMessage('Password is required'),
 ];

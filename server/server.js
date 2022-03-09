@@ -3,6 +3,7 @@ const connectDb = require('../database/mongoose');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const userRoutes = require('../routes/userRoutes');
+const postRoutes = require('../routes/postRoutes');
 
 require('dotenv').config();
 connectDb();
@@ -17,12 +18,16 @@ app.use(morgan('dev'));
 app.use(function (req, res, next) {
 	res.header('Access-Control-Allow-Origin', '*');
 	res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-	res.header('Access-Control-Allow-Headers', 'Content-Type');
+	res.header(
+		'Access-Control-Allow-Headers',
+		'Content-Type,Accept,authorization'
+	);
 
 	next();
 });
 
 app.use('/api/chat-app', userRoutes);
+app.use('/api/chat-app', postRoutes);
 
 app.listen(port, () => {
 	console.log(`server is running at port ${port}`);

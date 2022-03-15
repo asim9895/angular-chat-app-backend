@@ -4,12 +4,20 @@ const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const userRoutes = require('../routes/userRoutes');
 const postRoutes = require('../routes/postRoutes');
+const { Server } = require('socket.io');
 
 require('dotenv').config();
 connectDb();
 
 const app = express();
 const port = process.env.PORT || 3200;
+
+const server = require('http').createServer(app);
+const io = new Server(server, {
+	cors: {
+		origin: '*',
+	},
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -26,9 +34,11 @@ app.use(function (req, res, next) {
 	next();
 });
 
+require('../socket/streams')(io);
+
 app.use('/api/chat-app', userRoutes);
 app.use('/api/chat-app', postRoutes);
 
-app.listen(port, () => {
+server.listen(port, () => {
 	console.log(`server is running at port ${port}`);
 });

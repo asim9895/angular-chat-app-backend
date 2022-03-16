@@ -31,7 +31,28 @@ exports.all_posts = async (req, res) => {
 			return res.status(400).send({ errors: [{ msg: 'No Posts Found' }] });
 		}
 
-		res.status(200).send({ posts });
+		res.status(200).send({
+			posts,
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).send({ error: [{ msg: 'Server Error' }] });
+	}
+};
+
+exports.post_by_id = async (req, res) => {
+	const { post_id } = req.body;
+	try {
+		let post = await Post.findById(post_id)
+			.populate('user', '_id username')
+			.populate('comments.user', '_id username')
+			.populate('likes.user', '_id username');
+
+		if (!post) {
+			return res.status(400).send({ errors: [{ msg: 'No Posts Found' }] });
+		}
+
+		res.status(200).send({ post });
 	} catch (error) {
 		console.log(error);
 		res.status(500).send({ error: [{ msg: 'Server Error' }] });
@@ -48,7 +69,7 @@ exports.add_like = async (req, res) => {
 			return res.status(400).json({ msg: 'Post already liked' });
 		}
 
-		post.likes.unshift({ user: req.user.id });
+		post.likes.unshift({ user: req.user.id, createdAt: post?.updatedAt });
 
 		await post.save();
 
@@ -80,5 +101,32 @@ exports.remove_like = async (req, res) => {
 	} catch (err) {
 		console.error(err.message);
 		res.status(500).send('Server Error');
+	}
+};
+
+exports.add_comment = async (req, res) => {
+	const { post_id, comment } = req.body;
+	try {
+		const errors = validationResult(req);
+
+		if (!errors.isEmpty()) {
+			return res.status(401).send({ error: errors.array() });
+		}
+		const post = await Post.findById(post_id);
+
+		const newComment = {
+			comment,
+			user: req.user.id,
+			createdAt: post?.updatedAt,
+		};
+
+		post.comments.unshift(newComment);
+
+		await post.save();
+
+		res.json({ message: 'success' });
+	} catch (error) {
+		console.log(error);
+		res.status(500).send({ error: [{ msg: 'Server Error' }] });
 	}
 };

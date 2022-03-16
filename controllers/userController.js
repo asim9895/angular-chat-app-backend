@@ -94,6 +94,24 @@ exports.all_users = async (req, res) => {
 	}
 };
 
+exports.search_user = async (req, res) => {
+	const { username } = req.body;
+	try {
+		const users = await User.find({ username: { $regex: username } })
+			.select('-password')
+			.sort({ updatedAt: -1 });
+
+		if (!users) {
+			return res.status(401).send({ errors: [{ msg: 'No Users Found' }] });
+		}
+
+		res.status(200).json(users);
+	} catch (error) {
+		console.log(error);
+		res.status(500).send('server error');
+	}
+};
+
 exports.current_user = async (req, res) => {
 	try {
 		if (!req.user) {

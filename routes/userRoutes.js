@@ -4,6 +4,7 @@ const {
 	login,
 	all_users,
 	current_user,
+	search_user,
 } = require('../controllers/userController');
 const auth = require('../middleware/auth');
 const {
@@ -16,6 +17,7 @@ router.post('/register', registerValidation, register);
 router.post('/login', loginvalidations, login);
 
 router.post('/current_user', auth, current_user);
-router.post('/all_users', auth, all_users);
+router.post('/all-users', auth, all_users);
+router.post('/search-users', auth, search_user);
 
 module.exports = router;

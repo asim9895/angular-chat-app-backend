@@ -69,7 +69,7 @@ exports.add_like = async (req, res) => {
 			return res.status(400).json({ msg: 'Post already liked' });
 		}
 
-		post.likes.unshift({ user: req.user.id, createdAt: post?.updatedAt });
+		post.likes.unshift({ user: req.user.id, createdAt: post.updatedAt });
 
 		await post.save();
 
@@ -117,7 +117,7 @@ exports.add_comment = async (req, res) => {
 		const newComment = {
 			comment,
 			user: req.user.id,
-			createdAt: post?.updatedAt,
+			createdAt: post.updatedAt,
 		};
 
 		post.comments.unshift(newComment);

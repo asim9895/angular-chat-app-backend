@@ -116,7 +116,8 @@ exports.current_user = async (req, res) => {
 	let user = await User.findById(req.user.id)
 		.populate('following.user', '_id username')
 		.populate('followers.user', '_id username')
-		.populate('saved.post');
+		.populate('saved.post')
+		.populate('notifications.sender', '_id username');
 
 	try {
 		if (!user) {
@@ -143,6 +144,12 @@ exports.follow_user = async (req, res) => {
 
 		user.following.unshift({ user: other_user_id });
 		other_user.followers.unshift({ user: req.user._id });
+		other_user.notifications.unshift({
+			sender: req.user._id,
+			message: `is now following you`,
+			createdAt: new Date(),
+			viewProfile: false,
+		});
 
 		await user.save();
 		await other_user.save();
@@ -172,6 +179,12 @@ exports.unfollow_user = async (req, res) => {
 
 		other_user.followers = await other_user.followers.filter((followers) => {
 			return followers.user.toString() !== user_id;
+		});
+		other_user.notifications.unshift({
+			sender: req.user._id,
+			message: `has unfollowed you`,
+			createdAt: new Date(),
+			viewProfile: false,
 		});
 		user.following = await user.following.filter(
 			({ user }) => user.toString() !== other_user_id

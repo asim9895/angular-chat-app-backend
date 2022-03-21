@@ -1,4 +1,5 @@
 const Post = require('../models/Post');
+const User = require('../models/User');
 const { validationResult } = require('express-validator');
 
 exports.add_post = async (req, res) => {
@@ -46,7 +47,8 @@ exports.post_by_id = async (req, res) => {
 		let post = await Post.findById(post_id)
 			.populate('user', '_id username')
 			.populate('comments.user', '_id username')
-			.populate('likes.user', '_id username');
+			.populate('likes.user', '_id username')
+			.populate('saved.user', '_id username');
 
 		if (!post) {
 			return res.status(400).send({ errors: [{ msg: 'No Posts Found' }] });
@@ -128,5 +130,89 @@ exports.add_comment = async (req, res) => {
 	} catch (error) {
 		console.log(error);
 		res.status(500).send({ error: [{ msg: 'Server Error' }] });
+	}
+};
+
+exports.remove_comment = async (req, res) => {
+	const { post_id, comment_id } = req.body;
+
+	try {
+		const post = await Post.findById(post_id);
+		console.log(post_id);
+		console.log(comment_id);
+		console.log(post);
+		// Pull out comment
+		const comment = await post.comments.find(
+			(comment) => comment.id === comment_id
+		);
+		console.log(comment);
+		// Make sure comment exists
+		if (!comment) {
+			return res.status(404).json({ msg: 'Comment does not exist' });
+		}
+		// Check user
+		if (comment.user.toString() !== req.user.id) {
+			return res.status(401).json({ msg: 'User not authorized' });
+		}
+
+		post.comments = post.comments.filter(({ id }) => id !== comment_id);
+
+		await post.save();
+
+		return res.json(post.comments);
+	} catch (err) {
+		console.error(err);
+		return res.status(500).send('Server Error');
+	}
+};
+
+exports.save_post = async (req, res) => {
+	const { post_id } = req.body;
+	try {
+		const post = await Post.findById(post_id);
+		const user = await User.findById(req.user.id);
+
+		// Check if the post has already been liked
+		if (post.saved.some((saved) => saved.user.toString() === req.user.id)) {
+			return res.status(400).json({ msg: 'Post already saved' });
+		}
+
+		post.saved.unshift({ user: req.user.id, createdAt: post.updatedAt });
+		user.saved.unshift({ post: post, createdAt: post.updatedAt });
+
+		await post.save();
+		await user.save();
+
+		return res.json(post.saved);
+	} catch (error) {
+		console.log(error);
+		res.status(500).send({ error: [{ msg: 'Server Error' }] });
+	}
+};
+
+exports.unsave_post = async (req, res) => {
+	const { post_id } = req.body;
+	try {
+		const post = await Post.findById(post_id);
+		const user = await User.findById(req.user.id);
+
+		// Check if the post has not yet been liked
+		if (!post.saved.some((saved) => saved.user.toString() === req.user.id)) {
+			return res.status(400).json({ msg: 'Post has not yet been saved' });
+		}
+
+		// remove the like
+		post.saved = post.saved.filter(
+			({ user }) => user.toString() !== req.user.id
+		);
+		user.saved = user.saved.filter(({ post }) => post.toString() !== post_id);
+
+		await post.save();
+		await user.save();
+
+		return res.json(post.saved);
+	} catch (err) {
+		console.error(err.message);
+		res.status(500).send('Server Error');
 	}
 };

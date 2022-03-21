@@ -38,6 +38,18 @@ const postSchema = new mongoose.Schema(
 				},
 			},
 		],
+		saved: [
+			{
+				user: {
+					type: mongoose.Schema.Types.ObjectId,
+					ref: 'User',
+				},
+				createdAt: {
+					type: Date,
+					default: Date.now(),
+				},
+			},
+		],
 	},
 	{
 		timestamps: true,

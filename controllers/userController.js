@@ -116,8 +116,8 @@ exports.current_user = async (req, res) => {
 	let user = await User.findById(req.user.id)
 		.populate('following.user', '_id username')
 		.populate('followers.user', '_id username')
-		.populate('saved.post')
-		.populate('notifications.sender', '_id username');
+		.populate('notifications.sender', '_id username')
+		.populate('saved.post');
 
 	try {
 		if (!user) {

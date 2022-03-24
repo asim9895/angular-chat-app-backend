@@ -2,6 +2,14 @@ const Post = require('../models/Post');
 const User = require('../models/User');
 const { validationResult } = require('express-validator');
 
+let user_excluding_fields = {
+	password: 0,
+	saved: 0,
+	followers: 0,
+	following: 0,
+	notifications: 0,
+};
+
 exports.add_post = async (req, res) => {
 	const { post } = req.body;
 	try {
@@ -25,8 +33,30 @@ exports.add_post = async (req, res) => {
 exports.all_posts = async (req, res) => {
 	try {
 		let posts = await Post.find()
-			.populate('user', '_id username')
+			.populate({ path: 'user', select: user_excluding_fields })
 			.sort({ createdAt: -1 });
+
+		if (!posts) {
+			return res.status(400).send({ errors: [{ msg: 'No Posts Found' }] });
+		}
+
+		res.status(200).send({
+			posts,
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).send({ error: [{ msg: 'Server Error' }] });
+	}
+};
+
+exports.random_posts = async (req, res) => {
+	try {
+		let posts = await Post.aggregate([{ $sample: { size: 2000 } }]);
+
+		await Post.populate(posts, {
+			path: 'user',
+			select: user_excluding_fields,
+		});
 
 		if (!posts) {
 			return res.status(400).send({ errors: [{ msg: 'No Posts Found' }] });
@@ -45,10 +75,13 @@ exports.post_by_id = async (req, res) => {
 	const { post_id } = req.body;
 	try {
 		let post = await Post.findById(post_id)
-			.populate('user', '_id username')
-			.populate('comments.user', '_id username')
-			.populate('likes.user', '_id username')
-			.populate('saved.user', '_id username');
+			.populate({
+				path: 'user',
+				select: user_excluding_fields,
+			})
+			.populate({ path: 'comments.user', select: user_excluding_fields })
+			.populate({ path: 'likes.user', select: user_excluding_fields })
+			.populate({ path: 'saved.user', select: user_excluding_fields });
 
 		if (!post) {
 			return res.status(400).send({ errors: [{ msg: 'No Posts Found' }] });
@@ -138,15 +171,9 @@ exports.remove_comment = async (req, res) => {
 
 	try {
 		const post = await Post.findById(post_id);
-		console.log(post_id);
-		console.log(comment_id);
-		console.log(post);
-		// Pull out comment
 		const comment = await post.comments.find(
 			(comment) => comment.id === comment_id
 		);
-		console.log(comment);
-		// Make sure comment exists
 		if (!comment) {
 			return res.status(404).json({ msg: 'Comment does not exist' });
 		}

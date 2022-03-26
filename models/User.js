@@ -69,6 +69,18 @@ const userSchema = new mongoose.Schema(
 				},
 			},
 		],
+		chatList: [
+			{
+				user: {
+					type: mongoose.Schema.Types.ObjectId,
+					ref: 'User',
+				},
+				message: {
+					type: mongoose.Schema.Types.ObjectId,
+					ref: 'Message',
+				},
+			},
+		],
 	},
 	{
 		timestamps: true,

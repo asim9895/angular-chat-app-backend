@@ -4,6 +4,8 @@ const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const userRoutes = require('../routes/userRoutes');
 const postRoutes = require('../routes/postRoutes');
+const chatRoutes = require('../routes/chatRoutes');
+
 const { Server } = require('socket.io');
 
 require('dotenv').config();
@@ -38,6 +40,7 @@ require('../socket/streams')(io);
 
 app.use('/api/chat-app', userRoutes);
 app.use('/api/chat-app', postRoutes);
+app.use('/api/chat-app', chatRoutes);
 
 server.listen(port, () => {
 	console.log(`server is running at port ${port}`);

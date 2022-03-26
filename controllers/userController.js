@@ -94,6 +94,22 @@ exports.all_users = async (req, res) => {
 	}
 };
 
+exports.user_by_id = async (req, res) => {
+	const { id } = req.body;
+	try {
+		const user = await User.find({ _id: id }).select('-password');
+
+		if (!user) {
+			return res.status(401).send({ errors: [{ msg: 'No User Found' }] });
+		}
+
+		res.status(200).json(user);
+	} catch (error) {
+		console.log(error);
+		res.status(500).send('server error');
+	}
+};
+
 exports.search_user = async (req, res) => {
 	const { username } = req.body;
 	try {

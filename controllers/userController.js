@@ -218,3 +218,31 @@ exports.unfollow_user = async (req, res) => {
 		res.status(500).send('Server Error');
 	}
 };
+
+exports.mark_all_read_notifications = async (req, res) => {
+	try {
+		await User.update(
+			{
+				_id: req.user._id,
+			},
+			{
+				$set: {
+					'notifications.$[elem].read': true,
+				},
+			},
+			{
+				arrayFilters: [
+					{
+						'elem.read': false,
+					},
+				],
+				multi: true,
+			}
+		);
+
+		res.status(200).json({ message: 'success' });
+	} catch (error) {
+		console.log(error);
+		res.status(500).json('server error');
+	}
+};

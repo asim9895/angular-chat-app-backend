@@ -8,6 +8,7 @@ const {
 	follow_user,
 	unfollow_user,
 	user_by_id,
+	mark_all_read_notifications,
 } = require('../controllers/userController');
 const auth = require('../middleware/auth');
 const {
@@ -27,5 +28,6 @@ router.post('/search-users', auth, search_user);
 
 router.post('/follow-user', auth, follow_user);
 router.post('/unfollow-user', auth, unfollow_user);
+router.post('/mark-all-notifications', auth, mark_all_read_notifications);
 
 module.exports = router;

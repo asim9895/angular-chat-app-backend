@@ -71,7 +71,7 @@ const userSchema = new mongoose.Schema(
 		],
 		chatList: [
 			{
-				user: {
+				receiver: {
 					type: mongoose.Schema.Types.ObjectId,
 					ref: 'User',
 				},

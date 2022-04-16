@@ -8,6 +8,7 @@ let user_excluding_fields = {
 	followers: 0,
 	following: 0,
 	notifications: 0,
+	chatList: 0
 };
 
 exports.add_post = async (req, res) => {

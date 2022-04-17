@@ -37,6 +37,7 @@ app.use(function (req, res, next) {
 });
 
 require('../socket/streams')(io);
+require('../socket/private')(io);
 
 app.use('/api/chat-app', userRoutes);
 app.use('/api/chat-app', postRoutes);
